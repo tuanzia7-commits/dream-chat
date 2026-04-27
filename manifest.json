@@ -1,0 +1,15 @@
+{
+  "name": "梦角传讯站",
+  "short_name": "传讯站",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffc0cb",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
