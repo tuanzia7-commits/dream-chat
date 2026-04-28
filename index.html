@@ -46,7 +46,7 @@
         #chat-content { flex:1; overflow-y:auto; padding:30px 0 20px; display:flex; flex-direction:column; gap:12px; scroll-behavior: smooth; position:relative; background:transparent; scrollbar-width: none; -ms-overflow-style: none; z-index:2; contain: content; will-change: transform; }
         #chat-content::-webkit-scrollbar { display: none; }
 
-        .msg-row { display:flex; gap:10px; width:100%; position:relative; z-index:2; padding:4px 12px; border-radius:12px; }
+        .msg-row { display:flex; gap:8px; width:100%; position:relative; z-index:2; padding:4px 4px; border-radius:12px; }
         .msg-row.self { justify-content: flex-end; }
         .msg-avatar { width:40px; height:40px; border-radius:20px; object-fit:cover; cursor:pointer; border: 1.8px solid var(--primary); padding: 1.5px; background: var(--white); }
         .msg-body { display:flex; flex-direction:column; max-width:78%; }
@@ -333,11 +333,11 @@
         /* Multi-select & Forward */
         .multi-select-bar { 
             display:none; position:absolute; bottom:0; left:0; right:0; 
-            height:calc(80px + env(safe-area-inset-bottom)); 
+            height:calc(80px + env(safe-area-inset-bottom, 0px)); 
             background:rgba(255, 255, 255, 0.85); 
             backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
             border-top:1px solid var(--border); 
-            padding:12px 20px calc(12px + env(safe-area-inset-bottom)); 
+            padding:12px 20px calc(12px + env(safe-area-inset-bottom, 0px)); 
             z-index:2000; align-items:center; justify-content:space-around; 
             box-shadow:0 -10px 30px rgba(0,0,0,0.08);
             transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1230,6 +1230,11 @@
         }
 
         if(saved) { Object.assign(state, saved); }
+        
+        // 强制重置瞬态状态，防止死锁卡在多选模式
+        state.multiSelect = false;
+        state.selectedUids = [];
+        state.selectedTargetCids = [];
         
         if(!state.favorites) state.favorites = [];
         if(!state.userStickers) state.userStickers = [];
@@ -2291,7 +2296,7 @@
         }
     }
 
-    function toggleActions(ev, uid) { ev.stopPropagation(); const el = document.getElementById('actions-'+uid); if(!el) return; const isShow = el.classList.contains('show'); clearMenus(); if(!isShow) { el.classList.add('show'); const rect = el.getBoundingClientRect(); if(rect.top < 85) el.style.top = '50px'; else el.style.top = '-50px'; } }
+    function toggleActions(ev, uid) { ev.stopPropagation(); const el = document.getElementById('actions-'+uid); if(!el) return; const isShow = el.classList.contains('show'); clearMenus(); if(!isShow) { el.classList.add('show'); const rect = el.getBoundingClientRect(); const pRect = el.parentElement.getBoundingClientRect(); if(rect.top < 85) el.style.top = (pRect.height + 5) + 'px'; else el.style.top = '-50px'; } }
     function clearMenus() { document.querySelectorAll('.msg-actions').forEach(m=>{m.classList.remove('show'); m.style.top='-40px';}); }
     function togglePanel(type) { const stk = document.getElementById('sticker-panel'); const ext = document.getElementById('ext-panel'); if(type==='stk'){ stk.style.display = stk.style.display==='flex'?'none':'flex'; ext.style.display='none'; if(stk.style.display === 'flex') renderUserStickers(); } else { ext.style.display = ext.style.display==='grid'?'none':'grid'; stk.style.display='none'; } }
     function hidePanels() { document.getElementById('sticker-panel').style.display='none'; document.getElementById('ext-panel').style.display='none'; }
@@ -2810,6 +2815,9 @@
                 // 如果被浏览器拦截，在用户下一次点击时重试
                 document.addEventListener('click', () => keepAliveAudio.play(), {once:true});
                 document.addEventListener('touchstart', () => keepAliveAudio.play(), {once:true});
+                document.addEventListener('click', (e) => {
+                    if(!e.target.closest('.msg-actions') && !e.target.closest('.bubble-wrap')) clearMenus();
+                });
             });
         };
         play();

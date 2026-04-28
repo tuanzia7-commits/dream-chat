@@ -1,4 +1,4 @@
-// 这是一个基础的运行脚本，让浏览器认为这是一个 APP
+// 这是一个基础的运行脚本，让浏览器认为这是一个 APP (Version: 2026-04-28-v3-FORCED-REFRESH)
 self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
