@@ -1116,7 +1116,7 @@
                 });
                 state.cur = newId;
             }
-            this.save(); if(!isAuto) { alert('已保存'); router.go('list'); }
+            this.save(); if(!isAuto) { router.go('list'); }
         },
         delChar() {
             if(confirm('从此移除？')) {
@@ -1161,13 +1161,7 @@
             if(s.keepAlive) startKeepAlive(); else stopKeepAlive();
             this.save(); 
             if(!isAuto) {
-                const btn = document.querySelector('.btn-set-dark');
-                if (btn) {
-                    const oldTxt = btn.textContent; btn.textContent = '已保存';
-                    setTimeout(() => { btn.textContent = oldTxt; router.go('list'); }, 1000);
-                } else {
-                    router.go('list');
-                }
+                router.go('list');
             }
         },
         // 开启文件同步
@@ -1211,22 +1205,31 @@
         }
 
         let saved = fileSaved;
+        
+        // 【核心修复】首先从手机本地数据库加载记录，保证变动不丢失
+        if (!saved) {
+            saved = await dbStore.get('dream_v35');
+            if(!saved) {
+                const d = localStorage.getItem('dream_v35');
+                if(d) { 
+                    try { 
+                        saved = JSON.parse(d); 
+                        await dbStore.set('dream_v35', saved); 
+                    } catch(e) {} 
+                }
+            }
+        }
+
+        // 如果本地完全没有档案（比如第一次用），再尝试去拉取服务器初始默认的 Backup .json
         if (!saved) {
             try {
                 const res = await fetch('Backup .json');
                 if (res.ok) {
                     saved = await res.json();
                     await dbStore.set('dream_v35', saved);
-                    console.log('已从同目录下 Backup .json 自动加载数据！');
+                    console.log('已从同目录下 Backup .json 自动加载初始数据！');
                 }
             } catch(e) {}
-        }
-        if (!saved) {
-            saved = await dbStore.get('dream_v35');
-            if(!saved) {
-                const d = localStorage.getItem('dream_v35');
-                if(d) { try { saved = JSON.parse(d); await dbStore.set('dream_v35', saved); } catch(e) {} }
-            }
         }
 
         if(saved) { Object.assign(state, saved); }
@@ -1360,7 +1363,7 @@
 
     function updateListBg(i) { if(!i.files[0]) return; const r=new FileReader(); r.onload=(e)=>{ openCropper(e.target.result, 9/16, (res)=>{ state.global.listBg=res; save(); render(); }); i.value=''; }; r.readAsDataURL(i.files[0]); }
     function updateChatBg(i) { if(!i.files[0]) return; const r=new FileReader(); r.onload=(e)=>{ openCropper(e.target.result, 9/16, (res)=>{ const c=state.chars.find(x=>x.id===state.cur); if(c) c.chatBg=res; save(); render(); }); i.value=''; }; r.readAsDataURL(i.files[0]); }
-    function resetBg(type) { if(type==='list') state.global.listBg=''; save(); render(); alert('已重置'); }
+    function resetBg(type) { if(type==='list') state.global.listBg=''; save(); render(); }
 
     function jumpToMsg(uid) {
         const el = document.getElementById('msg-' + uid);
