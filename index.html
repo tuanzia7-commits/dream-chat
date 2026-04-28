@@ -824,17 +824,6 @@
                 </div>
             </div>
 
-            <div class="u-sec-title">系统更新</div>
-            <div class="set-card" style="margin-bottom: 24px;">
-                <div class="set-row" style="cursor:pointer; border-bottom: none;" onclick="forceUpdateApp()">
-                    <div class="data-action-icon" style="background: rgba(var(--primary-rgb), 0.1); color: var(--primary)"><svg class="icon-svg" style="width:16px;height:16px" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.92-12.28l5.67-5.67"/></svg></div>
-                    <div class="set-label" style="display:flex; flex-direction:column; gap:2px">
-                        <div>获取应用最新更新</div>
-                        <div style="font-size:10px; color:var(--text-sub)">自动安全刷新，您的任何聊天数据都不会丢失</div>
-                    </div>
-                </div>
-            </div>
-
             <div class="u-sec-title">全局设置</div>
             <div class="set-card">
                 <div class="set-row" style="cursor:pointer; border-bottom: none;" onclick="resetAllData()">
@@ -1615,18 +1604,6 @@
 
     function exportFullData() { const blob = new Blob([JSON.stringify(state)], {type: 'application/json'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `Backup.json`; a.click(); URL.revokeObjectURL(url); }
     
-    function forceUpdateApp() {
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                for(let registration of registrations) { registration.update(); }
-            });
-        }
-        document.body.style.opacity = '0.5';
-        setTimeout(() => {
-            window.location.href = window.location.href.split('?')[0] + '?update=' + new Date().getTime();
-        }, 500);
-    }
-
     const router = {
         stack: ['list'], 
         go(v){ 
